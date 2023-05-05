@@ -56,6 +56,8 @@ jobs:
           key: ${{ matrix.os }}-${{ secrets.CACHE_VERSION }}
       - name: "Install build prerequisites"
         run: brew install automake gettext haskell-stack libtool pkg-config protobuf-c
+      - name: "Install compiler dependencies"
+        run: make actonc-deps
       - name: "Build Acton"
         run: make -j2 -C ${{ github.workspace }} BUILD_RELEASE=${{ env.BUILD_RELEASE }}
       - name: "Build a release"

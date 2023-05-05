@@ -251,11 +251,16 @@ ACTC_GHC_OPTS=-optl-static
 endif
 # NOTE: we're unsetting CC to avoid using zig cc for stack / ghc, which doesn't
 # seem to work properly
-compiler/actonc: compiler/package.yaml.in compiler/stack.yaml $(ACTONC_HS)
-	cd compiler && unset CC && unset CFLAGS && stack build --dry-run 2>&1 | grep "Nothing to build" || \
+compiler/actonc: actonc-deps compiler/package.yaml.in compiler/stack.yaml $(ACTONC_HS)
+	unset CC && unset CFLAGS && cd compiler && stack build --dry-run 2>&1 | grep "Nothing to build" || \
 		(sed 's,^version:.*,version:      "$(VERSION_INFO)",' < package.yaml.in > package.yaml \
-		&& stack build --ghc-options='-j4 $(ACTC_GHC_OPTS)' \
+		&& stack build -j4 --ghc-options='-j4 $(ACTC_GHC_OPTS)' \
 		&& stack --local-bin-path=. install 2>/dev/null)
+
+.PHONY: actonc-deps
+actonc-deps: compiler/package.yaml.in compiler/stack.yaml
+	@echo "Install actonc dependencies"
+	unset CC && unset CFLAGS && cd compiler && stack build --only-dependencies -j4
 
 .PHONY: clean-compiler
 clean-compiler:
